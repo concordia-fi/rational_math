@@ -1,4 +1,4 @@
-module Ultima::UltimaRationalMath {
+module RationalMath::DecimalMath {
   use std::error;
   #[test_only]
   use std::debug;
@@ -202,13 +202,13 @@ module Ultima::UltimaRationalMath {
   //                    Sanity Tests
   //----------------------------------------------------------
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_new_raw() {
     let five = new(5, UNIFIED_SCALE);
     assert!(five.value == 5 && five.scale == UNIFIED_SCALE, 0)
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_denominator() {
     let dec = Decimal {
       value: 1800,
@@ -217,20 +217,20 @@ module Ultima::UltimaRationalMath {
     assert!(denominator(&dec) == 1000000,0)
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_zero() {
     let zero = new(0, UNIFIED_SCALE);
     assert!(is_zero(&zero), 0)
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_pow() {
     assert!(pow(10, 6) == 1000000, 1);
     assert!(pow(10, 0) == 1, 2);
     assert!(pow(2, 10) == 1024, 3);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_scaling() {
     let dec = Decimal {
       value: 1200,
@@ -244,7 +244,7 @@ module Ultima::UltimaRationalMath {
     assert!(dec.value == 120 && dec.scale == 5, 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_add() {
     let dec1 = Decimal {
       value: 1500,
@@ -258,7 +258,7 @@ module Ultima::UltimaRationalMath {
     assert!(result.value == 3000 && result.scale == 6, 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   #[expected_failure]
   public entry fun test_add_aborts_on_overflow() {
     let dec3 = Decimal {
@@ -272,7 +272,7 @@ module Ultima::UltimaRationalMath {
     add(dec3, dec4);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_sub() {
     let dec1 = Decimal {
       value: 1300,
@@ -286,7 +286,7 @@ module Ultima::UltimaRationalMath {
     assert!(result.value == 1000 && result.scale == 6, 0);
   }
 
-   #[test(account = @Ultima)]
+   #[test(account = @RationalMath)]
   #[expected_failure]
   public entry fun test_sub_aborts_on_underflow() {
     let dec1 = Decimal {
@@ -301,7 +301,7 @@ module Ultima::UltimaRationalMath {
   }
 
   //Needs more testing
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_mul() {
     let dec1 = Decimal {
       value: 3000,
@@ -337,7 +337,7 @@ module Ultima::UltimaRationalMath {
   }
 
   //Needs more testing
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   #[expected_failure]
   public entry fun test_mul_aborts_on_overflow() {
     let dec1 = Decimal {
@@ -352,7 +352,7 @@ module Ultima::UltimaRationalMath {
   }
 
   //Needs more testing
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_div_floor() {
 
     let dec1 = Decimal {
@@ -402,7 +402,7 @@ module Ultima::UltimaRationalMath {
     assert!(result.value == 100000000000 && result.scale == 8, 0);
   }
   
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_div_ceiling() {
     let dec1 = Decimal {
       value: 3000,
@@ -426,7 +426,7 @@ module Ultima::UltimaRationalMath {
     assert!(result2.value == 333334 && result2.scale == 3, 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_zero_scale_division() {
     let dec1 = Decimal {
       value: 48000000000000,
@@ -443,7 +443,7 @@ module Ultima::UltimaRationalMath {
     assert!(result.value == 1000000000000 && result.scale == 12, 0); // 1E12
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun explicit_sanity_test_for_difference_between_floor_and_ceiling_div() {
     let dec1 = Decimal {
       value: 3000,
@@ -487,7 +487,7 @@ module Ultima::UltimaRationalMath {
     assert!(result.value == 1000000000 && result.scale == 8, 0);
   }
 
-#[test(account = @Ultima)]
+#[test(account = @RationalMath)]
   public entry fun test_div_fractional() {
     let dec1 = Decimal {
       value: 1000,
@@ -523,7 +523,7 @@ module Ultima::UltimaRationalMath {
   }
 
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_lt() {
     let dec1 = Decimal {
       value: 3000,
@@ -541,7 +541,7 @@ module Ultima::UltimaRationalMath {
     assert!(!lt(dec1, dec2), 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_gt() {
     let dec1 = Decimal {
       value: 3000,
@@ -559,7 +559,7 @@ module Ultima::UltimaRationalMath {
     assert!(!gt(dec1, dec2), 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_lte() {
     let dec1 = Decimal {
       value: 3000,
@@ -577,7 +577,7 @@ module Ultima::UltimaRationalMath {
     assert!(lte(dec2, dec1), 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_gte() {
     let dec1 = Decimal {
       value: 3000,
@@ -595,7 +595,7 @@ module Ultima::UltimaRationalMath {
     assert!(gte(dec2, dec1), 0);
   }
 
-  #[test(account = @Ultima)]
+  #[test(account = @RationalMath)]
   public entry fun test_eq() {
     let dec1 = Decimal {
       value: 3000,

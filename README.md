@@ -5,8 +5,8 @@
 Install the [Aptos CLI](https://aptos.dev/cli-tools/aptos-cli-tool/install-aptos-cli) then:
 
 ```
-aptos move compile --named-addresses RationalMath=<address>
-aptos move test --named-addresses RationalMath=<address>
+aptos move compile --named-addresses rational_math=<address>
+aptos move test --named-addresses rational_math=<address>
 ```
 
 ## Features

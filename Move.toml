@@ -1,11 +1,11 @@
 [package]
-name = "RationalMath"
-version = "0.0.1"
+name = "rationalmath"
+version = "0.1.0"
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "8399cd1c7b9662d3a6a09c28363c5f66f0839c41" }
 
 [addresses]
-RationalMath = "_"
+rationalmath = "_"
 
 

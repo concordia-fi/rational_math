@@ -1,4 +1,4 @@
-# Decimal Lib
+# Rational Math
 
 ## Building and testing
 
@@ -12,72 +12,99 @@ aptos move test --named-addresses rational_math=<address>
 ## Features
 
 #### Structs
-Decimal struct has a value and a scale. Scale is the exponent of 10.
+Decimal struct has a value and a scale. Scale is an exponent of 10.
 ```
 struct Decimal {
-    value: u64,
+    value: u128,
     scale: u8
   }
 ``` 
 #### Utility Functions
+##### new
+ Returns a decimal with the given value and scale.
 ```move
-public fun from_raw(v: u64, s: u8): Decimal 
+public fun new(v: u128, s: u8): Decimal 
 ```
-- Returns a decimal with the given value and scale.
+##### is_zero
+Returns true if the decimal is zero.
 ```move
   public fun is_zero(d: &Decimal): bool 
 ```
+##### adjust_scale
+Adjusts the scale of the decimal to the given scale.
 ```move
   public fun adjust_scale(d: &mut Decimal, new_scale: u8)
 ```
-- Cannot be used to set the scale to 0.
-
+- Cannot be used to set the scale to 0
+##### denominator
+Returns 10 ^ scale.
 ```move
-  public fun denominator(d: &Decimal): u64
+  public fun denominator(d: &Decimal): u128
 ```
- - Returns 10 ^ scale.
+##### pow
+Returns base ^ exponent.
+```move
+  public fun pow(base: u128, exponent: u8): u128
+```
 
 #### Arithmetic
+##### add
+Adds two decimals of the same scale.
 ```move
-public fun add(d1: Decimal, d2: Decimal): Option<Decimal>
+  public fun add(d1: Decimal, d2: Decimal): Decimal
 ```
-  - Adds two decimals of the same scale, returns `none` if overflow occurs.
-
+- Panics on different scales
+##### sub
+Subtracts two decimals of the same scale.
   ```move
-  public fun sub(larger: Decimal, smaller: Decimal): Option<Decimal> 
+  public fun sub(larger: Decimal, smaller: Decimal): Decimal 
   ```
-  - Subs two decimals of the same scale, returns `none` if underflow
-
-
+- Panics on different scales
+##### mul
+Multiples two decimals of same or different scales.
 ```move
-public fun mul(d1: Decimal, d2: Decimal): Option<Decimal> {
+public fun mul(d1: Decimal, d2: Decimal): Decimal
 ```
-  - Multiples two decimals of same or different scales, returns `none` if overflow can be detected.
-  - Returns none if MAX_u64 is exceeded but can't check if the operations will exceed MAX_U128, care required.
-  - Keeps the scale of the decimal with the larger denominator.
-
+- Keeps the scale of the first decimal
+##### div_floor
+Divides two decimals of same or different scales with floor division.
 ```move
-public fun div(d1: Decimal, d2: Decimal, round_up: bool): Option<Decimal> 
+public fun div_floor(d1: Decimal, d2: Decimal): Decimal 
 ```
-  - Divides two decimals of same or different scales, returns `none` if overflow can be detected.
-  - Will error if any of the numerators or denominators are 0.
-  - Returns none if MAX_u64 is exceeded but can't check if the operations will exceed MAX_U128, care required.
-  - Keeps the scale of the decimal with the larger denominator.
-
-
-#### Internal Functions
-
+- Keeps the scale of the first decimal
+- Panics if the second decimal is zero
+##### div_ceiling
+Divides two decimals of same or different scales with ceiling division.
 ```move
-  fun pow(base: u64, exp: u8): u64 
+public fun div_ceiling(d1: Decimal, d2: Decimal): Decimal 
 ```
-- Performs exponentiation for a base and exponent.
+- Keeps the scale of the first decimal
+- Panics if the second decimal is zero
 
-```move
-fun min_u64(first: u64, second: u64): u64 
-```
-- Returns the smaller of two u64s.
+#### Comparison
 
+##### eq
+Returns true if the two decimals are equal.
 ```move
-fun max_u8(first: u8, second: u8): u8 
+public fun eq(d1: Decimal, d2: Decimal): bool 
 ```
-- Returns the larger of two u8s.
+##### lt
+Returns true if the first decimal is less than the second.
+```move
+public fun lt(d1: Decimal, d2: Decimal): bool 
+```
+##### gt
+Returns true if the first decimal is greater than the second.
+```move
+public fun gt(d1: Decimal, d2: Decimal): bool 
+```
+##### lte
+Returns true if the first decimal is less than or equal to the second.
+```move
+public fun le(d1: Decimal, d2: Decimal): bool 
+```
+##### gte
+Returns true if the first decimal is greater than or equal to the second.
+```move
+public fun ge(d1: Decimal, d2: Decimal): bool 
+```

@@ -1,6 +1,8 @@
 module rationalmath::decimal {
   use std::error;
 
+  const MAX_U128: u128 = 340282366920938463463374607431768211455;
+
   const ERR_DIV_BY_ZERO: u64 = 1;
   const ERR_OUT_OF_RANGE: u64 = 2;
   const ERR_DIFFERENT_SCALE: u64 = 3;

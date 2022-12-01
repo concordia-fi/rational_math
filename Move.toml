@@ -8,4 +8,5 @@ AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir 
 [addresses]
 rationalmath = "_"
 
-
+[dev-addresses]
+rationalmath = '0xAB'

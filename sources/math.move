@@ -1,9 +1,7 @@
 module rationalmath::decimal {
-  use std::error;
-
-  const ERR_DIV_BY_ZERO: u64 = 1;
-  const ERR_OUT_OF_RANGE: u64 = 2;
-  const ERR_DIFFERENT_SCALE: u64 = 3;
+  const ERR_DIV_BY_ZERO: u64 = 22001;
+  const ERR_OUT_OF_RANGE: u64 = 22002;
+  const ERR_DIFFERENT_SCALE: u64 = 22003;
 
   struct Decimal has drop, copy, store {
     value: u128,
@@ -39,7 +37,7 @@ module rationalmath::decimal {
   }
 
   public fun adjust_scale(d: &mut Decimal, new_scale: u8) {
-    assert!(new_scale > 0, error::invalid_argument(ERR_OUT_OF_RANGE));
+    assert!(new_scale > 0, ERR_OUT_OF_RANGE);
     if (d.scale == new_scale) {
      return
     };
@@ -61,9 +59,9 @@ module rationalmath::decimal {
   //                     Arithmetic
   //----------------------------------------------------------
 
-  //adds two decimals of the same scale, returns none if overflow
+  //adds two decimals of the same scale, aborts if overflow
   public fun add(d1: Decimal, d2: Decimal): Decimal {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     Decimal {
       value: d1.value + d2.value,
       scale: d1.scale,
@@ -72,7 +70,7 @@ module rationalmath::decimal {
 
   //subs two decimals of the same scale, returns none if underflow
   public fun sub(larger: Decimal, smaller: Decimal): Decimal {
-    assert!(larger.scale == smaller.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(larger.scale == smaller.scale, ERR_DIFFERENT_SCALE);
     Decimal {
       value: larger.value - smaller.value,
       scale: larger.scale,
@@ -90,7 +88,7 @@ module rationalmath::decimal {
 
   //divides two decimals with floor div, can handle different scales
   public fun div_floor(d1: Decimal, d2: Decimal): Decimal {
-    assert!(d2.value != 0, error::invalid_argument(ERR_DIV_BY_ZERO));
+    assert!(d2.value != 0, ERR_DIV_BY_ZERO);
     
     if (d1.value == 0) {
       return Decimal {
@@ -107,7 +105,7 @@ module rationalmath::decimal {
 
   //divides two decimals with ceiling div
   public fun div_ceiling(d1: Decimal, d2: Decimal): Decimal {
-    assert!(d2.value != 0, error::invalid_argument(ERR_DIV_BY_ZERO));
+    assert!(d2.value != 0, ERR_DIV_BY_ZERO);
     
     if (d1.value == 0) {
       return Decimal {
@@ -126,27 +124,27 @@ module rationalmath::decimal {
   //                     Comparisons
   //----------------------------------------------------------
   public fun lt(d1: Decimal, d2: Decimal): bool {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     return d1.value < d2.value
   }
 
   public fun gt(d1: Decimal, d2: Decimal): bool {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     return d1.value > d2.value
   }
 
   public fun lte(d1: Decimal, d2: Decimal): bool {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     return d1.value <= d2.value
   }
 
   public fun gte(d1: Decimal, d2: Decimal): bool {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     return d1.value >= d2.value
   }
 
   public fun eq(d1: Decimal, d2: Decimal): bool {
-    assert!(d1.scale == d2.scale, error::invalid_argument(ERR_DIFFERENT_SCALE));
+    assert!(d1.scale == d2.scale, ERR_DIFFERENT_SCALE);
     return d1.value == d2.value
   }
 
@@ -156,7 +154,13 @@ module rationalmath::decimal {
     };
     let count: u8 = 1;
     let val: u128 = base;
-    while (count < exp) {
+    while ({
+        spec {
+          invariant val == spec_pow(base, count);
+          invariant 0 < count && count <= exp;
+        };
+        count < exp
+    }) {
       val = val * base;
       count = count + 1;
     };

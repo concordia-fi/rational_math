@@ -1,4 +1,6 @@
 module rationalmath::decimal {
+  use aptos_std::math128;
+
   const ERR_DIV_BY_ZERO: u64 = 22001;
   const ERR_OUT_OF_RANGE: u64 = 22002;
   const ERR_DIFFERENT_SCALE: u64 = 22003;
@@ -42,17 +44,19 @@ module rationalmath::decimal {
      return
     };
     if (d.scale > new_scale) {
-      d.value = d.value / pow(10u128, d.scale - new_scale);
+      let e: u8 = d.scale - new_scale;
+      d.value = d.value / math128::pow(10u128, (e as u128));
       d.scale = new_scale;
     }
     else {
-      d.value = d.value * pow(10u128, new_scale - d.scale);
+      let e: u8 = new_scale - d.scale;
+      d.value = d.value * math128::pow(10u128, (e as u128));
       d.scale = new_scale;
     }
   }
 
   public fun denominator(d: &Decimal): u128 {
-    pow(10u128, d.scale)
+    math128::pow(10u128, (d.scale as u128))
   }
 
   //----------------------------------------------------------
@@ -148,25 +152,6 @@ module rationalmath::decimal {
     return d1.value == d2.value
   }
 
-  public fun pow(base: u128, exp: u8): u128 {
-    if (exp == 0) {
-      return 1
-    };
-    let count: u8 = 1;
-    let val: u128 = base;
-    while ({
-        spec {
-          invariant val == spec_pow(base, count);
-          invariant 0 < count && count <= exp;
-        };
-        count < exp
-    }) {
-      val = val * base;
-      count = count + 1;
-    };
-    val
-  }
-
   //---------------------------------------------------------- 
   //                       Internal
   //----------------------------------------------------------
@@ -219,13 +204,6 @@ const UNIFIED_SCALE: u8 = 9;
   public entry fun test_zero() {
     let zero = dec::new(0, UNIFIED_SCALE);
     assert!(dec::is_zero(&zero), 0)
-  }
-
-  #[test(account = @rationalmath)]
-  public entry fun test_pow() {
-    assert!(dec::pow(10, 6) == 1000000, 1);
-    assert!(dec::pow(10, 0) == 1, 2);
-    assert!(dec::pow(2, 10) == 1024, 3);
   }
 
   #[test(account = @rationalmath)]

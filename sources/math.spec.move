@@ -19,30 +19,30 @@ spec rationalmath::decimal {
         ensures result.scale == d1.scale;
         ensures result.value == d1.value * d2.value;
         aborts_if d1.value * d2.value > MAX_U256 with EXECUTION_FAILURE;
-        aborts_if spec_denominator(d2) == 0 with EXECUTION_FAILURE;
     }
 
     spec div_floor {
         ensures result.scale == d1.scale;
-        ensures result.value == (d1.value * spec_denominator(d2)) / d2.value;
+        ensures result.value == (d1.value * spec_decimal_scale_to_num(d2)) / d2.value;
 
         aborts_if d2.value == 0 with ERR_DIV_BY_ZERO;
     }
 
     spec div_ceiling {
         ensures result.scale == d1.scale;
-        ensures result.value == ((d1.value * spec_denominator(d2)) + (d2.value - 1)) / d2.value;
+        ensures result.value == ((d1.value * spec_decimal_scale_to_num(d2)) + (d2.value - 1)) / d2.value;
 
         aborts_if d2.value == 0 with ERR_DIV_BY_ZERO;
     }
 
-    spec denominator {
+    spec decimal_scale_to_num {
         pragma opaque;
         aborts_if [abstract] spec_pow_u256(10, d.scale) > MAX_U256;
-        ensures [abstract] result == spec_denominator(d);
+        ensures [abstract] result == spec_decimal_scale_to_num(d);
+        ensures [abstract] result > 0;
     }
 
-    spec fun spec_denominator(d: Decimal): u256 {
+    spec fun spec_decimal_scale_to_num(d: Decimal): u256 {
         spec_pow_u256(10, d.scale)
     }
 

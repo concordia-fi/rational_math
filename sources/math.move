@@ -33,6 +33,10 @@ module rationalmath::decimal {
     d.scale
   }
 
+  public fun decimal_scale_to_num(d: &Decimal): u256 {
+    pow_u256(10u256, (d.scale as u256))
+  }
+
   public fun is_zero(d: &Decimal): bool {
     d.value == 0
   }
@@ -52,10 +56,6 @@ module rationalmath::decimal {
       d.value = d.value * pow_u256(10u256, (e as u256));
       d.scale = new_scale;
     }
-  }
-
-  public fun denominator(d: &Decimal): u256 {
-   pow_u256(10u256, (d.scale as u256))
   }
 
   //----------------------------------------------------------
@@ -82,7 +82,7 @@ module rationalmath::decimal {
 
   //multiplies two decimals, can handle different scales, can overflow
   public fun mul(d1: Decimal, d2: Decimal): Decimal {
-    let denom = denominator(&d2);
+    let denom = decimal_scale_to_num(&d2);
     Decimal {
       value: ((d1.value * d2.value) + (denom - 1)) / denom,
       scale: d1.scale,
@@ -101,7 +101,7 @@ module rationalmath::decimal {
     };
 
     Decimal {
-      value: (d1.value * denominator(&d2)) / d2.value,
+      value: (d1.value * decimal_scale_to_num(&d2)) / d2.value,
       scale: d1.scale
     }
   }
@@ -118,7 +118,7 @@ module rationalmath::decimal {
     };
 
     Decimal {
-      value: ((d1.value * denominator(&d2)) + (d2.value - 1)) / d2.value,
+      value: ((d1.value * decimal_scale_to_num(&d2)) + (d2.value - 1)) / d2.value,
       scale: d1.scale
     }
   }
@@ -209,9 +209,9 @@ const MAX_U256: u256 = 115792089237316195423570985008687907853269984665640564039
   }
 
   #[test(account = @rationalmath)]
-  public entry fun test_denominator() {
+  public entry fun test_decimal_scale_to_num() {
     let dec = dec::new(1800, 6);
-    assert!(dec::denominator(&dec) == 1000000,0)
+    assert!(dec::decimal_scale_to_num(&dec) == 1000000,0)
   }
 
   #[test(account = @rationalmath)]
@@ -242,7 +242,7 @@ const MAX_U256: u256 = 115792089237316195423570985008687907853269984665640564039
   #[test(account = @rationalmath)]
   #[expected_failure]
   public entry fun test_add_aborts_on_overflow() {
-    let dec3 = dec::new(115792089237316195423570985008687907853269984665640564039457584007913129639935, 6);
+    let dec3 = dec::new(MAX_U256, 6);
     let dec4 = dec::new(1, 6);
     dec::add(dec3, dec4);
   }
@@ -282,7 +282,7 @@ const MAX_U256: u256 = 115792089237316195423570985008687907853269984665640564039
   #[test(account = @rationalmath)]
   #[expected_failure]
   public entry fun test_mul_aborts_on_overflow() {
-    let dec1 = dec::new(115792089237316195423570985008687907853269984665640564039457584007913129639935, 6);
+    let dec1 = dec::new(MAX_U256, 6);
     let dec2 = dec::new(200, 6);
     dec::mul(dec1, dec2);
   }

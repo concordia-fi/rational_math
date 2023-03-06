@@ -1,12 +1,11 @@
 module rationalmath::decimal {
-  use aptos_std::math128;
 
   const ERR_DIV_BY_ZERO: u64 = 22001;
   const ERR_OUT_OF_RANGE: u64 = 22002;
   const ERR_DIFFERENT_SCALE: u64 = 22003;
 
   struct Decimal has drop, copy, store {
-    value: u128,
+    value: u256,
     scale: u8
   }
 
@@ -19,19 +18,23 @@ module rationalmath::decimal {
   //                      Utilities
   //----------------------------------------------------------
 
-  public fun new(v: u128, s: u8): Decimal {
+  public fun new(v: u256, s: u8): Decimal {
     Decimal {
       value: v,
       scale: s,
     }
   }
 
-  public fun val(d: &Decimal): u128 {
+  public fun val(d: &Decimal): u256 {
     d.value
   }
   
   public fun scale(d: &Decimal): u8 {
     d.scale
+  }
+
+  public fun decimal_scale_to_num(d: &Decimal): u256 {
+    pow_u256(10u256, (d.scale as u256))
   }
 
   public fun is_zero(d: &Decimal): bool {
@@ -45,18 +48,14 @@ module rationalmath::decimal {
     };
     if (d.scale > new_scale) {
       let e: u8 = d.scale - new_scale;
-      d.value = d.value / math128::pow(10u128, (e as u128));
+      d.value = d.value /  pow_u256(10u256, (e as u256));
       d.scale = new_scale;
     }
     else {
       let e: u8 = new_scale - d.scale;
-      d.value = d.value * math128::pow(10u128, (e as u128));
+      d.value = d.value * pow_u256(10u256, (e as u256));
       d.scale = new_scale;
     }
-  }
-
-  public fun denominator(d: &Decimal): u128 {
-    math128::pow(10u128, (d.scale as u128))
   }
 
   //----------------------------------------------------------
@@ -83,7 +82,7 @@ module rationalmath::decimal {
 
   //multiplies two decimals, can handle different scales, can overflow
   public fun mul(d1: Decimal, d2: Decimal): Decimal {
-    let denom = denominator(&d2);
+    let denom = decimal_scale_to_num(&d2);
     Decimal {
       value: ((d1.value * d2.value) + (denom - 1)) / denom,
       scale: d1.scale,
@@ -102,7 +101,7 @@ module rationalmath::decimal {
     };
 
     Decimal {
-      value: (d1.value * denominator(&d2)) / d2.value,
+      value: (d1.value * decimal_scale_to_num(&d2)) / d2.value,
       scale: d1.scale
     }
   }
@@ -119,7 +118,7 @@ module rationalmath::decimal {
     };
 
     Decimal {
-      value: ((d1.value * denominator(&d2)) + (d2.value - 1)) / d2.value,
+      value: ((d1.value * decimal_scale_to_num(&d2)) + (d2.value - 1)) / d2.value,
       scale: d1.scale
     }
   }
@@ -156,7 +155,7 @@ module rationalmath::decimal {
   //                       Internal
   //----------------------------------------------------------
 
-  fun min_u128(first: u128, second: u128): u128 {
+  fun min_u256(first: u256, second: u256): u256 {
     if (first < second) {
       return first
     } else {
@@ -164,7 +163,7 @@ module rationalmath::decimal {
     }
   }
 
-  fun max_u128(first: u128, second: u128): u128 {
+  fun max_u256(first: u256, second: u256): u256 {
     if (first > second) {
       return first
     } else {
@@ -180,13 +179,28 @@ module rationalmath::decimal {
     }
   }
 
-
+  fun pow_u256(n: u256, e:u256): u256 {
+    if (e == 0) {
+        1
+    } else {
+        let p = 1;
+        while (e > 1) {
+            if (e % 2 == 1) {
+                p = p * n;
+            };
+            e = e / 2;
+            n = n * n;
+        };
+        p * n
+    }
+  }
 }
 
 #[test_only]
 module rationalmath::test_decimal {
 use rationalmath::decimal as dec;
 const UNIFIED_SCALE: u8 = 9;
+const MAX_U256: u256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
 
   #[test(account = @rationalmath)]
   public entry fun test_new_raw() {
@@ -195,9 +209,9 @@ const UNIFIED_SCALE: u8 = 9;
   }
 
   #[test(account = @rationalmath)]
-  public entry fun test_denominator() {
+  public entry fun test_decimal_scale_to_num() {
     let dec = dec::new(1800, 6);
-    assert!(dec::denominator(&dec) == 1000000,0)
+    assert!(dec::decimal_scale_to_num(&dec) == 1000000,0)
   }
 
   #[test(account = @rationalmath)]
@@ -228,7 +242,7 @@ const UNIFIED_SCALE: u8 = 9;
   #[test(account = @rationalmath)]
   #[expected_failure]
   public entry fun test_add_aborts_on_overflow() {
-    let dec3 = dec::new(340282366920938463463374607431768211455, 6);
+    let dec3 = dec::new(MAX_U256, 6);
     let dec4 = dec::new(1, 6);
     dec::add(dec3, dec4);
   }
@@ -268,7 +282,7 @@ const UNIFIED_SCALE: u8 = 9;
   #[test(account = @rationalmath)]
   #[expected_failure]
   public entry fun test_mul_aborts_on_overflow() {
-    let dec1 = dec::new(3402823669209384634633746074317682114, 6);
+    let dec1 = dec::new(MAX_U256, 6);
     let dec2 = dec::new(200, 6);
     dec::mul(dec1, dec2);
   }

@@ -37,10 +37,6 @@ module rationalmath::decimal {
     pow_u256(10u256, (d.scale as u256))
   }
 
-  public fun is_zero(d: &Decimal): bool {
-    d.value == 0
-  }
-
   public fun adjust_scale(d: &mut Decimal, new_scale: u8) {
     assert!(new_scale > 0, ERR_OUT_OF_RANGE);
     if (d.scale == new_scale) {
@@ -212,12 +208,6 @@ const MAX_U256: u256 = 115792089237316195423570985008687907853269984665640564039
   public entry fun test_decimal_scale_to_num() {
     let dec = dec::new(1800, 6);
     assert!(dec::decimal_scale_to_num(&dec) == 1000000,0)
-  }
-
-  #[test(account = @rationalmath)]
-  public entry fun test_zero() {
-    let zero = dec::new(0, UNIFIED_SCALE);
-    assert!(dec::is_zero(&zero), 0)
   }
 
   #[test(account = @rationalmath)]
